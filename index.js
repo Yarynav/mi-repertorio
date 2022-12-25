@@ -16,15 +16,23 @@ app.get('/', (req, res) => {
 });
 
 app.get('/canciones', async (req, res) => {
-  const songs = await fs.readFile('./repertorio.json', 'utf8');
-  res.json(JSON.parse(songs));
+  try {
+    const songs = await fs.readFile('./repertorio.json', 'utf8');
+    res.json(JSON.parse(songs));
+  } catch {
+    res.status(500).json({ error: errorText });
+  }
 });
 app.post('/canciones', async (req, res) => {
-  const songs = await fs.readFile('./repertorio.json', 'utf8');
-  const songsJson = JSON.parse(songs);
-  songsJson.push(req.body);
-  await fs.writeFile('./repertorio.json', JSON.stringify(songsJson, null, 2));
-  res.json(JSON.parse(songs));
+  try {
+    const songs = await fs.readFile('./repertorio.json', 'utf8');
+    const songsJson = JSON.parse(songs);
+    songsJson.push(req.body);
+    await fs.writeFile('./repertorio.json', JSON.stringify(songsJson, null, 2));
+    res.json(JSON.parse(songs));
+  } catch {
+    res.status(500).json({ error: errorText });
+  }
 });
 app.put('/canciones/:id', async (req, res) => {
   try {
@@ -39,6 +47,16 @@ app.put('/canciones/:id', async (req, res) => {
     res.status(500).json({ error: errorText });
   }
 });
-app.delete(' /canciones/:id', (req, res) => {
-  res.json({});
+app.delete('/canciones/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const songs = await fs.readFile('./repertorio.json', 'utf8');
+    const songsJson = JSON.parse(songs);
+    const editableSongIndex = songsJson.findIndex((e) => e.id == id);
+    songsJson.splice(editableSongIndex, 1);
+    await fs.writeFile('./repertorio.json', JSON.stringify(songsJson, null, 2));
+    res.json(songsJson);
+  } catch {
+    res.status(500).json({ error: errorText });
+  }
 });
